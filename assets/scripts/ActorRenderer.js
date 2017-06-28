@@ -32,7 +32,7 @@ cc.Class({
     onLoad: function () {
     },
 
-    init: function ( playerInfo, playerInfoPos, stakePos, turnDuration, switchSide ) {
+    init: function ( playerInfo, playerInfoPos, stakePos, turnDuration, switchSide,my) {
         // actor
         this.actor = this.getComponent('Actor');
 
@@ -46,7 +46,17 @@ cc.Class({
         if(!switchSide){
             this.stakeOnTable.setRotationY(180);
         }
+        if(my=="my"){
+        this.labelPlayerName.string = "我";
+        cc.log(this.labelPlayerName);
+        this.labelPlayerName.node.y +=25;
+        this.labelPlayerName.node.color = cc.color(0,255,0);
+
+        }else{
         this.labelPlayerName.string = playerInfo.name;
+
+        }
+        // this.labelPlayerName.string.color = cc.Color.RED
         this.updateTotalStake(playerInfo.gold);
         var photoIdx = playerInfo.photoIdx % 5;
         this.spPlayerPhoto.spriteFrame = Game.instance.assetMng.playerPhotos[photoIdx];

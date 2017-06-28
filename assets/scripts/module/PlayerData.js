@@ -1,4 +1,33 @@
-const players = [
+
+
+// var xmlhttp=null;
+// var players = null;
+// if (window.XMLHttpRequest)
+//   {// code for Firefox, Opera, IE7, etc.
+//   xmlhttp=new XMLHttpRequest();
+//   }
+// else if (window.ActiveXObject)
+//   {// code for IE6, IE5
+//   xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+//   }
+
+//   xmlhttp.onreadystatechange=function change()
+// {
+// if (xmlhttp.readyState==4&&xmlhttp.status==200)
+//   {// 4 = "loaded"
+//     var obj = JSON.parse(xmlhttp.response);
+    
+//     players=obj.players;
+
+//   }
+// };
+
+// xmlhttp.open("GET","http://localhost:8888",false);
+// xmlhttp.send(null);
+
+
+
+var players = [
 	{
 		name: '燃烧吧，蛋蛋儿军',
 		gold: 3000,
@@ -35,6 +64,10 @@ const players = [
 		photoIdx: 6
 	}
 ];
+
+
+var players = null;
+
 
 module.exports = {
 	players: players

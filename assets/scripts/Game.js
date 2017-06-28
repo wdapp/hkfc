@@ -13,6 +13,24 @@ var Game = cc.Class({
             default: [],
             type: cc.Node
         },
+
+        mySocket: cc.Node,//玩家数据
+        readyBtn:cc.Label,
+        info:cc.Label,
+        info1:cc.Label,
+        info2:cc.Label,
+        info3:cc.Label,
+        info4:cc.Label,
+        info5:cc.Label,
+        cardPrefab:cc.Prefab,
+        backCard:cc.Prefab,
+        sf: {
+            default:[],
+            type:cc.SpriteFrame
+        },
+
+
+
         playerPrefab: cc.Prefab,
         dealer: cc.Node,
         inGameUI: cc.Node,
@@ -35,6 +53,30 @@ var Game = cc.Class({
 
     // use this for initialization
     onLoad: function () {
+
+        this.gameObj = {
+        ready:false,
+        id:0,
+        first:0,//--
+        select:"zhunbei",
+        cards:[],
+        allcards:[]
+
+        };
+
+         this.btnDisable = false;
+         this.allCard = [];
+         this.cardInt = 0;
+
+         this.infoArr = [];
+         this.infoArr.push(this.info1);
+         this.infoArr.push(this.info2);
+         this.infoArr.push(this.info3);
+         this.infoArr.push(this.info4);
+         this.infoArr.push(this.info5);
+
+        this.obj= null;
+        this.seatDown = false;
         Game.instance = this;
         this.inGameUI = this.inGameUI.getComponent('InGameUI');
         this.assetMng = this.assetMng.getComponent('AssetMng');
@@ -47,10 +89,75 @@ var Game = cc.Class({
 
         //
         this.player = null;
-        this.createPlayers();
+        var that = this;
+        // players = this.mySocket.getComponent('Socket').mpl;
+        this.mySocket.getComponent('Socket').socket.onmessage = function(msg){
+            cc.log("服务器传过来的公共信息:");
+            cc.log(msg);
+            if(msg.data.substr(0,6)!="status"){
 
+                if(msg.data.substr(0,2)!="自己"){
+                var arr = JSON.parse(msg.data);
+                
+                 console.log("接收服务器广播:");console.log(arr);
+
+                 players = arr;
+
+                 
+
+                 that.createPlayers("no");//渲染玩家
+                }else{
+
+                 that.gameObj.id = msg.data.substr(2);
+
+                 that.createPlayers("my");//渲染玩家
+                }
+            }else{
+                that.obj = JSON.parse(msg.data.substr(6));
+
+                 cc.log("全局信息");cc.log(that.obj);
+                 
+
+                    that.gameObj.allcards = that.obj.allcards;
+
+                    for(var i=0;i<that.obj.cards.length;i++){
+                        that.gameObj.cards.push(that.obj.cards[i]);
+                    }
+
+
+                 cc.log("我的牌:");cc.log(that.gameObj);
+
+                //更新全局消息 开始游戏
+                that.info.string = that.obj.game;
+                that.info.fontsize = 18;
+                
+                //更新玩家状态
+                for(var i=0;i<that.infoArr.length;i++){
+                    if(that.obj.first!=(i+1)){
+                        that.infoArr[i].string = that.obj.tip;
+                    }else{
+                        that.infoArr[i].string = "选择";
+                    }
+                }
+
+                //更新显示牌图片
+                that.initCard();
+
+
+                that.gameObj.first=that.obj.first;
+
+                if(that.gameObj.id==that.obj.first){
+                      that.btnDisable = true;
+                }
+
+
+            }
+            
+        };
+
+    
         // shortcut to ui element
-        this.info = this.inGameUI.resultTxt;
+        // this.info = this.inGameUI.resultTxt;
         this.totalChips = this.inGameUI.labelTotalChips;
 
         // init logic
@@ -62,40 +169,178 @@ var Game = cc.Class({
         this.updateTotalChips();
 
         this.audioMng.playMusic();
+
+
+
+    },
+
+    initCard:function(){
+            //清空所有牌
+            for(var i=0;i<this.allCard.length;i++){
+                this.allCard[i].destroy();
+            }
+
+            var y = 250;
+            var x = 320;
+            //刷新台面上的牌
+            for(var i=0;i<this.gameObj.allcards.length;i++){
+
+                if(i%2==0){
+                var newStar = cc.instantiate(this.backCard); 
+                this.node.addChild(newStar,10000);
+                }else{
+                var newStar = cc.instantiate(this.cardPrefab);
+                this.node.addChild(newStar,10000);
+                newStar.getChildByName('point').getComponent(cc.Label).string = this.gameObj.allcards[i].name;//.string = this.gameObj.cards[0].name;
+               
+
+                switch(this.gameObj.allcards[i].type){
+                    case "hei":
+                newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[0];//.string = this.gameObj.cards[0].name;
+
+                    break;
+                    case "hong":
+                newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[1];//.string = this.gameObj.cards[0].name;
+                    
+                    break;
+                    case "hua":
+                newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[2];//.string = this.gameObj.cards[0].name;
+                    
+                    break;
+                    case "pian":
+                newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[3];//.string = this.gameObj.cards[0].name;
+                    
+                    break;
+                }
+               
+                }
+               
+
+
+                this.allCard.push(newStar);
+
+                if(i==2){
+                    y = 100;
+                    this.cardInt = 0;
+                }
+                if(i==4){
+                    y = -50;
+                    this.cardInt = 0;
+                    x = 200;
+                }
+                  if(i==6){
+                    y = 100;
+                    this.cardInt = 0;
+                    x = -160;
+                }
+                if(i==8){
+                    y = 250;
+                    this.cardInt = 0;
+                    x = -160;
+                }
+
+                newStar.setPosition(-x+this.cardInt,y);
+                this.cardInt +=50;
+
+      
+
+            }
+
+
     },
 
     addStake: function (delta) {
-        
-        if (this.totalChipsNum < delta) {
-            console.log('not enough chips!');
-            this.info.enabled = true;
-            this.info.string = '金币不足!';
-            return false;
-        } else {
-            this.totalChipsNum -= delta;
-            this.updateTotalChips();
-            this.player.addStake(delta);
-            this.audioMng.playChips();
-            this.info.enabled = false;
-            this.info.string = '请下注';
-            return true;
+        cc.log(delta);
+
+        if(this.btnDisable){
+            this.btnDisable  = false;
+                switch(delta){
+                case 10000:
+                cc.log("梭哈");
+                this.gameObj.select = "suoha";
+
+                break;
+                case 5000:
+                cc.log("跟注");
+                this.gameObj.select = "genzhu";
+                
+                break;
+                case 2000:
+                cc.log("加注");
+                this.gameObj.select = "jiazhu";
+                
+                break;
+                case 1000:
+                cc.log("放弃");
+                this.gameObj.select = "fangqi";
+                
+                break;
+            }
+
+
+             cc.log("选择");
+            cc.log(this.gameObj);
+            this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+
         }
+        
+
+
+
+        // if (this.totalChipsNum < delta) {
+        //     console.log('not enough chips!');
+        //     this.info.enabled = true;
+        //     this.info.string = '金币不足!';
+        //     return false;
+        // } else {
+        //     this.totalChipsNum -= delta;
+        //     this.updateTotalChips();
+        //     this.player.addStake(delta);
+        //     this.audioMng.playChips();
+        //     this.info.enabled = false;
+        //     this.info.string = '请下注';
+        //     return true;
+        // }
 
     },
 
     resetStake: function() {
-        this.totalChipsNum += this.player.stakeNum;
-        this.player.resetStake();
-        this.updateTotalChips();
+        if(this.btnDisable){
+            this.btnDisable  = false;
+             cc.log("过");
+
+
+
+         }
+
+
+        // this.totalChipsNum += this.player.stakeNum;
+        // this.player.resetStake();
+        // this.updateTotalChips();
     },
 
     updateTotalChips: function() {
         this.totalChips.string = this.totalChipsNum;
-        this.player.renderer.updateTotalStake(this.totalChipsNum);
+        // this.player.renderer.updateTotalStake(this.totalChipsNum);
     },
     //创建玩家
-    createPlayers: function () {
-        for (var i = 0; i < 5; ++i) {
+    createPlayers: function (ply) {
+        var s = 0;
+        if(players.length>=5){
+            s=5;
+        }else{
+            s=players.length;
+        }
+
+
+        for (var i = 0; i < s; ++i) {
+
+             if(this.seatDown){
+                if(i!=s-1){
+                    continue;
+                }
+            }
+
             var playerNode = cc.instantiate(this.playerPrefab);
             var anchor = this.playerAnchors[i];
             var switchSide = (i <= 2);
@@ -105,12 +350,16 @@ var Game = cc.Class({
             var playerInfoPos = cc.find('anchorPlayerInfo', anchor).getPosition();
             var stakePos = cc.find('anchorStake', anchor).getPosition();
             var actorRenderer = playerNode.getComponent('ActorRenderer');
-            actorRenderer.init(players[i], playerInfoPos, stakePos, this.turnDuration, switchSide);
+
+            actorRenderer.init(players[i], playerInfoPos, stakePos, this.turnDuration, switchSide,ply);
+            
+
             if (i === 2) {
                 this.player = playerNode.getComponent('Player');
                 this.player.init();
             }
         }
+         this.seatDown = true;
     },
 
     // UI EVENT CALLBACKS
@@ -151,14 +400,24 @@ var Game = cc.Class({
     },
 
     //
-    deal: function () {
-        this.fsm.toDeal();
-        this.audioMng.playButton();
+    deal: function () {//准备
+        // this.fsm.toDeal();
+        // this.audioMng.playButton();
+        cc.log("准备");
+        if(!this.gameObj.ready){
+            this.gameObj.ready=!this.gameObj.ready;
+            cc.log(this.gameObj);
+            this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+            this.readyBtn.string = "已准备";
+        }
+       
+
+
     },
 
     //
     start: function () {
-        this.fsm.toBet();
+        //this.fsm.toBet();
         this.audioMng.playButton();
     },
 
@@ -258,7 +517,7 @@ var Game = cc.Class({
     onBetState: function  (enter) {
         if (enter) {
            this.decks.reset();
-           this.player.reset();
+           // this.player.reset();
            this.dealer.reset();
            this.info.string = '请下注';
            this.inGameUI.showBetState();

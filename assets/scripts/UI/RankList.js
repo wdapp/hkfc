@@ -1,6 +1,6 @@
-const players = require('PlayerData').players;
+var players = require('PlayerData').players;
 
-cc.Class({
+module.exports = cc.Class({
     extends: cc.Component,
 
     properties: {
@@ -12,11 +12,20 @@ cc.Class({
     // use this for initialization
     onLoad: function () {
         this.content = this.scrollView.content;
-        this.populateList();
+        // this.populateList();
+
+        
     },
 
     populateList: function() {
-        for (var i = 0; i < this.rankCount; ++i) {
+        var s = 0;
+        if(players.length>=5){
+            s=5;
+        }else{
+            s=players.length;
+        }
+
+        for (var i = 0; i < s; ++i) {
             var playerInfo = players[i];
             var item = cc.instantiate(this.prefabRankItem);
             item.getComponent('RankItem').init(i, playerInfo);
@@ -29,3 +38,4 @@ cc.Class({
 
     },
 });
+

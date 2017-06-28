@@ -23,7 +23,7 @@ cc.Class({
         this.betStateUI.active = true;
         this.gameStateUI.active = false;
         // this.resultStateUI.active = false;
-        this.btnStart.active = false;
+        //this.btnStart.active = false;
         this.betDuration = betDuration;
         this.betTimer = 0;
         this.isBetCounting = false;
@@ -47,7 +47,7 @@ cc.Class({
     showBetState: function () {
         this.betStateUI.active = true;
         this.gameStateUI.active = false;
-        this.btnStart.active = false;
+        // this.btnStart.active = false;
     },
 
     showGameState: function () {

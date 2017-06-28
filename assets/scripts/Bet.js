@@ -22,14 +22,18 @@ cc.Class({
     },
 
     _registerBtns: function () {
+
         var self = this;
         var registerBtn = function (index) {
+
             self.btnChips[i].on('touchstart', function (event) {
+
                 if (Game.instance.addStake(self.chipValues[index])) {
                     self.playAddChip();
                 }
             }, this);
         };
+
         for (var i = 0; i < self.btnChips.length; ++i) {
             registerBtn(i);
         }
