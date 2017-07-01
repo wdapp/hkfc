@@ -30,7 +30,6 @@ var Game = cc.Class({
         },
 
 
-
         playerPrefab: cc.Prefab,
         dealer: cc.Node,
         inGameUI: cc.Node,
@@ -54,19 +53,24 @@ var Game = cc.Class({
     // use this for initialization
     onLoad: function () {
 
-        this.gameObj = {
+        this.gameObj = { 
             ready:false,
             id:0,
         first:0,//--
         select:"zhunbei",
         cards:[],
-        allcards:[]
+        allcards:[],
+        clientNum:0,
+        cardsNum:0
 
     };
 
+    this.firstSendCard = true;
     this.btnDisable = false;
     this.allCard = [];
     this.cardInt = 0;
+    this.cardPosition = [];
+    this.pos = 2;
 
     this.infoArr = [];
     this.infoArr.push(this.info1);
@@ -117,6 +121,7 @@ var Game = cc.Class({
 
 
             that.gameObj.allcards = that.obj.allcards;
+            that.gameObj.clientNum = that.obj.clientNum;
 
             for(var i=0;i<that.obj.cards.length;i++){
                 that.gameObj.cards.push(that.obj.cards[i]);
@@ -138,20 +143,34 @@ var Game = cc.Class({
                     }
                 }
 
-                //更新显示牌图片
-                that.initCard();
+                if(that.firstSendCard){
+                   //更新显示牌图片
+                   // that.gameObj.cardsNum = that.gameObj.allcards.length;
+
+                   that.cardInt = 0;
+                   that.initCard();
+                   that.firstSendCard = false;
+               }else{
+                if(that.obj.game=="fapai"){
+                    that.cardInt = 0;
+                    that.ContinueSendCard();    
+                }
 
 
-                that.gameObj.first=that.obj.first;
 
-                if(that.gameObj.id==that.obj.first){
-                  that.btnDisable = true;
-              }
+            }
 
 
+            that.gameObj.first=that.obj.first;
+
+            if(that.gameObj.id==that.obj.first){
+              that.btnDisable = true;
           }
 
-      };
+
+      }
+
+  };
 
 
         // shortcut to ui element
@@ -171,8 +190,73 @@ var Game = cc.Class({
 
 
     },
+    ContinueSendCard:function(){
+        cc.log("再次发牌-------------------------------");
+        var y = 250;
+        var x = 320-this.pos*35;
+            //刷新台面上的牌
+            for(var i=this.gameObj.cardsNum;i<this.gameObj.allcards.length;i++){
 
-    initCard:function(){
+
+                // if(this.gameObj.id == ((i-this.gameObj.cardsNum)+1)){
+
+                    var newStar = cc.instantiate(this.cardPrefab);
+                    this.node.addChild(newStar,10000);
+                            newStar.getChildByName('point').getComponent(cc.Label).string = this.gameObj.allcards[i].name;//.string = this.gameObj.cards[0].name;
+
+                            switch(this.gameObj.allcards[i].type){
+                                case "hei":
+                            newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[0];//.string = this.gameObj.cards[0].name;
+
+                            break;
+                            case "hong":
+                            newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[1];//.string = this.gameObj.cards[0].name;
+
+                            break;
+                            case "hua":
+                            newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[2];//.string = this.gameObj.cards[0].name;
+
+                            break;
+                            case "pian":
+                            newStar.getChildByName('suit').getComponent(cc.Sprite).spriteFrame = this.sf[3];//.string = this.gameObj.cards[0].name;
+
+                            break;
+                        }
+
+                    // }
+
+                    this.allCard.push(newStar);
+
+                    if((i-this.gameObj.cardsNum)+1==2){
+                        y = 100;
+                    }
+                    if((i-this.gameObj.cardsNum)+1==3){
+                        y = -50;
+                        x = 200-this.pos*35;
+                    }
+                    if((i-this.gameObj.cardsNum)+1==4){
+                        y = 100;
+                        x = -160-this.pos*35;
+                    }
+                    if((i-this.gameObj.cardsNum)+1==5){
+                        y = 250;
+                        x = -160-this.pos*35;
+                    }
+
+                    newStar.setPosition(-x,y);
+                    // this.cardInt +=35;
+
+                }
+
+
+                this.gameObj.cardsNum = this.gameObj.allcards.length;
+                this.pos++;
+            },
+            initCard:function(){
+                cc.log("首发-------------------------------");
+
+                this.gameObj.cardsNum = this.gameObj.allcards.length;
+
             //清空所有牌
             for(var i=0;i<this.allCard.length;i++){
                 this.allCard[i].destroy();
@@ -212,8 +296,10 @@ var Game = cc.Class({
 
 
                     }else{
+
                         var newStar = cc.instantiate(this.backCard);
                         this.node.addChild(newStar,10000);
+                        
                     }
 
                 }else{
