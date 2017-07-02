@@ -29,6 +29,15 @@ var Game = cc.Class({
             type:cc.SpriteFrame
         },
 
+        gold: {
+            default:[],
+            type:cc.Label
+        },
+
+         allbtn: {
+            default:[],
+            type:cc.Node
+        },
 
         playerPrefab: cc.Prefab,
         dealer: cc.Node,
@@ -54,6 +63,7 @@ var Game = cc.Class({
     onLoad: function () {
 
         this.gameObj = { 
+            delcli:true,
             ready:false,
             id:0,
         first:0,//--
@@ -61,7 +71,10 @@ var Game = cc.Class({
         cards:[],
         allcards:[],
         clientNum:0,
-        cardsNum:0
+        cardsNum:0,
+        gold:[1000,1000,1000,1000,1000],
+        allGold:0,
+        allSelect:[[],[],[],[],[]]
 
     };
 
@@ -71,6 +84,8 @@ var Game = cc.Class({
     this.cardInt = 0;
     this.cardPosition = [];
     this.pos = 2;
+    this.allPlayer = [];
+    this.chuangjianyici = true;
 
     this.infoArr = [];
     this.infoArr.push(this.info1);
@@ -110,7 +125,7 @@ var Game = cc.Class({
                  that.createPlayers("no");//渲染玩家
              }else{
 
-               that.gameObj.id = msg.data.substr(2);
+                 that.gameObj.id = msg.data.substr(2);
 
                  that.createPlayers("my");//渲染玩家
              }
@@ -122,6 +137,9 @@ var Game = cc.Class({
 
             that.gameObj.allcards = that.obj.allcards;
             that.gameObj.clientNum = that.obj.clientNum;
+            that.gameObj.gold = that.obj.gold;
+            that.gameObj.allGold = that.obj.allGold;
+            that.gameObj.allSelect = that.obj.allSelect;
 
             for(var i=0;i<that.obj.cards.length;i++){
                 that.gameObj.cards.push(that.obj.cards[i]);
@@ -133,7 +151,33 @@ var Game = cc.Class({
                 //更新全局消息 开始游戏
                 that.info.string = that.obj.game;
                 that.info.fontsize = 18;
-                
+
+
+                // for(var i=0;i<allPlayer;i++){
+
+                // }
+
+// that.playerNode
+that.playerNode.getChildByName('stakeOnTable').getChildByName('bg').getChildByName('stakeNum').getComponent(cc.Label).string = "";
+that.playerNode.getChildByName('playerInfo').getChildByName('namePlate').getChildByName('stakeNum').getComponent(cc.Label).string = "";
+
+                //更新金币显示
+                // that.playerNode.getChildByName('stakeOnTable').getComponent(cc.Label).string = 888;//.string = this.gameObj.cards[0].name;
+
+                that.gold[0].string = that.gameObj.gold[0];
+
+                that.gold[1].string = that.gameObj.gold[1];
+
+                that.gold[2].string = that.gameObj.gold[2];
+
+                that.gold[3].string = that.gameObj.gold[3];
+
+                that.gold[4].string = that.gameObj.gold[4];
+
+                //全部筹码
+                that.gold[5].string = that.gameObj.allGold;
+
+
                 //更新玩家状态
                 for(var i=0;i<that.infoArr.length;i++){
                     if(that.obj.first!=(i+1)){
@@ -423,8 +467,11 @@ addStake: function (delta) {
             this.btnDisable  = false;
             cc.log("过");
 
+            cc.log("选择");
+            cc.log(this.gameObj);
+            this.gameObj.select = "guo";
 
-
+            this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
         }
 
 
@@ -439,41 +486,53 @@ addStake: function (delta) {
     },
     //创建玩家
     createPlayers: function (ply) {
-        var s = 0;
-        if(players.length>=5){
-            s=5;
-        }else{
-            s=players.length;
-        }
+
+        if(this.chuangjianyici){
+            // this.chuangjianyici = false;
 
 
-        for (var i = 0; i < s; ++i) {
+            var s = 0;
+            if(players.length>=5){
+                s=5;
+            }else{
+                s=players.length;
+            }
 
-           if(this.seatDown){
-            if(i!=s-1){
-                continue;
+
+            for (var i = 0; i < s; ++i) {
+
+             if(this.seatDown){
+                if(i!=s-1){
+                    continue;
+                }
+            }
+
+            this.playerNode = cc.instantiate(this.playerPrefab);
+
+            this.allPlayer.push(this.playerNode);
+
+            console.log("----------------------------");
+            console.log(this.allPlayer);
+            var anchor = this.playerAnchors[i];
+            var switchSide = (i <= 2);
+            anchor.addChild(this.playerNode);
+            this.playerNode.position = cc.p(0, 0);
+
+            var playerInfoPos = cc.find('anchorPlayerInfo', anchor).getPosition();
+            var stakePos = cc.find('anchorStake', anchor).getPosition();
+            var actorRenderer = this.playerNode.getComponent('ActorRenderer');
+
+            actorRenderer.init(players[i], playerInfoPos, stakePos, this.turnDuration, switchSide,ply);
+
+
+            if (i === 2) {
+                this.player = this.playerNode.getComponent('Player');
+                this.player.init();
             }
         }
+        this.seatDown = true;
 
-        var playerNode = cc.instantiate(this.playerPrefab);
-        var anchor = this.playerAnchors[i];
-        var switchSide = (i <= 2);
-        anchor.addChild(playerNode);
-        playerNode.position = cc.p(0, 0);
-
-        var playerInfoPos = cc.find('anchorPlayerInfo', anchor).getPosition();
-        var stakePos = cc.find('anchorStake', anchor).getPosition();
-        var actorRenderer = playerNode.getComponent('ActorRenderer');
-
-        actorRenderer.init(players[i], playerInfoPos, stakePos, this.turnDuration, switchSide,ply);
-
-
-        if (i === 2) {
-            this.player = playerNode.getComponent('Player');
-            this.player.init();
-        }
     }
-    this.seatDown = true;
 },
 
     // UI EVENT CALLBACKS
@@ -630,7 +689,7 @@ addStake: function (delta) {
     // 下注
     onBetState: function  (enter) {
         if (enter) {
-         this.decks.reset();
+           this.decks.reset();
            // this.player.reset();
            this.dealer.reset();
            this.info.string = '请下注';
