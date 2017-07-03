@@ -7446,9 +7446,9 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 245,
+      "g": 8,
+      "b": 8,
       "a": 255
     },
     "_cascadeOpacityEnabled": true,
@@ -8061,9 +8061,9 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 236,
+      "g": 16,
+      "b": 16,
       "a": 255
     },
     "_cascadeOpacityEnabled": true,
@@ -8135,9 +8135,9 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 238,
+      "g": 6,
+      "b": 6,
       "a": 255
     },
     "_cascadeOpacityEnabled": true,
@@ -8149,7 +8149,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 64,
-      "height": 40
+      "height": 80
     },
     "_rotationX": 0,
     "_rotationY": 0,
@@ -8183,7 +8183,7 @@
     "_N$file": null,
     "_isSystemFontUsed": true,
     "_spacingX": 0,
-    "_N$string": "跟住",
+    "_N$string": "跟注\n下注",
     "_N$horizontalAlign": 1,
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
@@ -8209,9 +8209,9 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 233,
+      "g": 16,
+      "b": 16,
       "a": 255
     },
     "_cascadeOpacityEnabled": true,
@@ -10768,6 +10768,23 @@
       },
       {
         "__id__": 295
+      }
+    ],
+    "allbtn": [
+      {
+        "__id__": 179
+      },
+      {
+        "__id__": 199
+      },
+      {
+        "__id__": 201
+      },
+      {
+        "__id__": 203
+      },
+      {
+        "__id__": 205
       }
     ],
     "playerPrefab": {

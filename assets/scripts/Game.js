@@ -34,7 +34,7 @@ var Game = cc.Class({
             type:cc.Label
         },
 
-         allbtn: {
+        allbtn: {
             default:[],
             type:cc.Node
         },
@@ -74,7 +74,9 @@ var Game = cc.Class({
         cardsNum:0,
         gold:[1000,1000,1000,1000,1000],
         allGold:0,
-        allSelect:[[],[],[],[],[]]
+        allSelect:[],
+        allow:[]
+
 
     };
 
@@ -125,7 +127,7 @@ var Game = cc.Class({
                  that.createPlayers("no");//渲染玩家
              }else{
 
-                 that.gameObj.id = msg.data.substr(2);
+               that.gameObj.id = msg.data.substr(2);
 
                  that.createPlayers("my");//渲染玩家
              }
@@ -140,6 +142,8 @@ var Game = cc.Class({
             that.gameObj.gold = that.obj.gold;
             that.gameObj.allGold = that.obj.allGold;
             that.gameObj.allSelect = that.obj.allSelect;
+            that.gameObj.allow = that.obj.allow;
+            that.gameObj.allNum = that.obj.allNum;
 
             for(var i=0;i<that.obj.cards.length;i++){
                 that.gameObj.cards.push(that.obj.cards[i]);
@@ -411,68 +415,92 @@ addStake: function (delta) {
     cc.log(delta);
 
     if(this.btnDisable){
+
         this.btnDisable  = false;
         switch(delta){
             case 10000:
-            cc.log("梭哈");
-            this.gameObj.select = "suoha";
 
-            break;
-            case 5000:
-            cc.log("跟注");
-            this.gameObj.select = "genzhu";
+            if(this.gameObj.allow[1]){
+               cc.log("梭哈");
+               this.gameObj.select = "suoha";
+               cc.log("选择");
+               cc.log(this.gameObj);
+               this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+           }else{
+            cc.log('不能梭哈');
+            this.btnDisable  = true;
 
-            break;
-            case 2000:
-            cc.log("加注");
-            this.gameObj.select = "jiazhu";
-
-            break;
-            case 1000:
-            cc.log("放弃");
-            this.gameObj.select = "fangqi";
-
-            break;
         }
 
 
+        break;
+        case 5000:
+
+        cc.log("跟注");
+        this.gameObj.select = "genzhu";
         cc.log("选择");
         cc.log(this.gameObj);
         this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
 
+        break;
+        case 2000:
+        if(this.gameObj.select!='suoha'){
+            if(this.gameObj.allow[3]){
+
+                cc.log("加注");
+                this.gameObj.select = "jiazhu";
+                cc.log("选择");
+                cc.log(this.gameObj);
+                this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+            }else{
+                cc.log("不能加注");
+                this.btnDisable  = true;
+
+            }
+        }else{
+            cc.log("已经梭哈");
+            
+        }
+
+        break;
+        case 1000:
+        cc.log("放弃");
+        this.gameObj.select = "fangqi";
+        cc.log("选择");
+        cc.log(this.gameObj);
+        this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+        break;
     }
 
+}
+},
 
+resetStake: function() {
+    if(this.btnDisable){
+        this.btnDisable  = false;
 
+        if(this.gameObj.select!='suoha'){
 
-        // if (this.totalChipsNum < delta) {
-        //     console.log('not enough chips!');
-        //     this.info.enabled = true;
-        //     this.info.string = '金币不足!';
-        //     return false;
-        // } else {
-        //     this.totalChipsNum -= delta;
-        //     this.updateTotalChips();
-        //     this.player.addStake(delta);
-        //     this.audioMng.playChips();
-        //     this.info.enabled = false;
-        //     this.info.string = '请下注';
-        //     return true;
-        // }
-
-    },
-
-    resetStake: function() {
-        if(this.btnDisable){
-            this.btnDisable  = false;
             cc.log("过");
-
             cc.log("选择");
             cc.log(this.gameObj);
-            this.gameObj.select = "guo";
+            if(this.gameObj.allow[0]){
 
-            this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+                this.gameObj.select = "guo";
+
+                this.mySocket.getComponent('Socket').socket.send(JSON.stringify(this.gameObj));
+            }else{
+                cc.log("不能过");
+                this.btnDisable  = true;
+
+            }
+
+        }else{
+            cc.log("梭哈了");
         }
+
+
+    }
 
 
         // this.totalChipsNum += this.player.stakeNum;
@@ -501,7 +529,7 @@ addStake: function (delta) {
 
             for (var i = 0; i < s; ++i) {
 
-             if(this.seatDown){
+               if(this.seatDown){
                 if(i!=s-1){
                     continue;
                 }
@@ -689,7 +717,7 @@ addStake: function (delta) {
     // 下注
     onBetState: function  (enter) {
         if (enter) {
-           this.decks.reset();
+         this.decks.reset();
            // this.player.reset();
            this.dealer.reset();
            this.info.string = '请下注';
