@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<input type="text" id="inp">
+	<script type="text/javascript">
+		var socket = new WebSocket("ws://localhost:3001");
+		socket.onopen = function(){
+			console.log("网页连接成功");
+		}
+		socket.onmessage = function(msg){
+			console.log(msg.data);
+		}
+		document.getElementById("inp").onchange = function(){
+			socket.send(this.value);
+		}
+
+	</script>
+</body>
+</html>
